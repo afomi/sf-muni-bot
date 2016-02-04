@@ -1,6 +1,6 @@
 module Sf
   module Muni
-    module Bot
+    class Bot
       VERSION = "0.1.0"
     end
   end
