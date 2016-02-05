@@ -1,5 +1,6 @@
 require 'slack-ruby-client'
 require_relative "bot/version"
+require_relative "api/api"
 
 Slack.configure do |config|
   config.token = ENV.fetch("SLACK_API_TOKEN")
