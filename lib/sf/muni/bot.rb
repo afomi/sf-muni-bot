@@ -99,9 +99,9 @@ module Sf
             client.message channel: data['channel'], text: "You have selected *#{message}*"
           end
 
-          if "Inbound" == message.capitalize
+          if "inbound" == message.capitalize.downcase
             @memory[:selected_direction] = "Inbound"
-          elsif "Outbound" == message.capitalize
+          elsif "outbound" == message.downcase
             @memory[:selected_direction] = "Outbound"
           end
 
