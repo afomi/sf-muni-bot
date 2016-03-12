@@ -111,7 +111,7 @@ module Sf
 
       def get_stops_for_route(agency: "", route_id: "", direction_code: "")
         @stops = []
-        nodes = parse(get(__method__, { "routeIDF" => "#{agency}~#{route_id}#{if !direction_code.empty?; '~' + direction_code; end}" }))
+        nodes = parse(get(__method__, { "routeIDF" => "#{agency}~#{route_id}#{!direction_code.empty? ? '~' + direction_code : nil}" }))
 
         if !nodes.css("transitServiceError").empty?
           raise ArgumentError, "transitServiceError"
