@@ -148,7 +148,7 @@ module Sf
           case message
           when "help" then
             client.message channel: data['channel'], text: "Hi, I can do the following:\n #{agencies}"
-          when "get agencies" then
+          when "get_agencies" then
             client.message channel: data['channel'], text: "Getting Agencies..."
             client.message channel: data['channel'], text: @api.get_agencies.collect { |agency| agency[:name] }.join("\n")
           when "get_routes_for_agencies" then
