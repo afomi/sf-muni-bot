@@ -31,4 +31,18 @@ describe Sf::Muni::Api do
       end
     end
   end
+
+  describe "#get_agencies" do
+    it "return an array" do
+      agencies = @api.get_agencies
+      expect(agencies.class).to eq Array
+    end
+
+    it "attributes" do
+      agency = @api.get_agencies.first
+      expect(agency.class).to eq Hash
+      expect(agency.keys).to match [:name, :has_direction, :mode]
+    end
+  end
+
 end
