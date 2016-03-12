@@ -4,12 +4,18 @@ require 'open-uri'
 
 module Sf
   module Muni
+    class Agency
+    end
+
     class Api
-      attr_reader :token, :urls
+      attr_reader :token, :urls,
+        :agencies, :routes
 
       def initialize
         @token = token
         @urls = urls
+        @agencies = []
+        @routes = []
       end
 
       def token
@@ -17,9 +23,21 @@ module Sf
       end
 
       # Call the 511 API.
-      def get(path)
+      def get(path, options = {})
         url = @urls[path]
         url = "#{url}?token=#{token}"
+
+        if !options.empty?
+          query_params = ""
+
+          options.each_pair { |key, value|
+            query_params += "&#{key}=#{value}"
+          }
+          url = url + query_params
+        end
+
+        puts "URL =========================>"
+        puts url
         open(url).read
       end
 
@@ -43,27 +61,90 @@ module Sf
       end
 
       def get_agencies
-        parse(get(__method__))
+        parse_agencies parse(get(__method__))
       end
 
-      def get_routes_for_agencies
-        parse(get(__method__))
+      def parse_agencies(nodes)
+        return if !@agencies.empty?
+
+        nodes.css("Agency").each do |agency|
+          hash = {
+            name: agency.attr("Name"),
+            has_direction: agency.attr("HasDirection"),
+            mode: agency.attr("Mode")
+          }
+          @agencies << hash
+        end
+
+        @agencies
       end
 
-      def get_routes_for_agency
-        parse(get(__method__))
+      def get_routes_for_agencies(options = {})
+        @routes = []
+
+        nodes = parse(get(__method__, options))
+        nodes.css("Route").each do |route|
+          hash = {
+            name: route.attr("Name"),
+            code: route.attr("Code")
+          }
+          @routes << hash
+        end
+
+        @routes
       end
 
-      def get_stops_for_route
-        parse(get(__method__))
+      def get_routes_for_agency(agency = "")
+        @routes = []
+        nodes = parse(get(__method__, { "agencyName" => agency }))
+
+        nodes.css("Route").each do |route|
+          hash = {
+            name: route.attr("Name"),
+            code: route.attr("Code")
+          }
+          @routes << hash
+        end
+
+        @routes
+      end
+
+      def get_stops_for_route(agency: "", route_id: "", direction_code: "")
+        @stops = []
+        nodes = parse(get(__method__, { "routeIDF" => "#{agency}~#{route_id}#{if !direction_code.empty?; '~' + direction_code; end}" }))
+
+        if !nodes.css("transitServiceError").empty?
+          raise ArgumentError, "transitServiceError"
+        end
+
+        nodes.css("Stop").each do |route|
+          hash = {
+            name: route.attr("name"),
+            stop_code: route.attr("StopCode")
+          }
+          @stops << hash
+        end
+
+        @stops
       end
 
       def get_stops_for_routes
         parse(get(__method__))
       end
 
-      def get_next_departures_by_stop_name
-        parse(get(__method__))
+      def get_next_departures_by_stop_name(agency_name: "", stop_name: "")
+        @departures = []
+
+        nodes = parse(get(__method__, { "agencyName" => agency_name, "stopName" => stop_name }))
+
+        nodes.css("Route").each do |time|
+          hash = {
+            leaving_in: time.text
+          }
+          @departures << hash
+        end
+
+        @departures
       end
 
       def get_next_departures_by_stop_code
